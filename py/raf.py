@@ -1,0 +1,56 @@
+import  numpy       as      np
+import  pylab       as      pl
+
+from    astropy.io  import  fits
+
+## NAXIS2  =                 9969 /Number of rows                                  
+## TFIELDS =                   97 /Number of columns in table                      
+
+data = fits.open('../dat/uvudf15.fits')
+
+print data.info()
+print data[1].header
+
+filters = ['F225W',\
+           'F275W',\
+           'F336W',\
+           'F435W',\
+           'F606W',\
+           'F775W',\
+           'F850LP',\
+           'F105W',\
+           'F125W',\
+           'F140W',\
+           'F160W']
+
+cols    = ['ID', 'STELLARITY', 'UVUDF_COVERAGE', 'UVUDF_EDGEFLG', 'Z_BPZ', 'TEMPLATE_BPZ', 'Z_EAZY', 'NFOBS', 'NF5SIG', 'SPECZ', 'SPECZ_REF', 'STAR']
+
+mags    = ['MAG_'    + filt for filt in filters]
+magerrs = ['MAGERR_' + filt for filt in filters]
+
+cols   += mags
+cols   += magerrs
+
+for col in cols:
+  print col, data[1].data[col] 
+
+##############################
+zs     = data[1].data['Z_BPZ']
+
+(dNdz, bins)  = np.histogram(zs, bins = np.arange(0.0, 6.0, 0.10))
+
+dNdz          = dNdz.astype(np.float)
+bins          = bins[:-1]
+
+dz            = bins[1] - bins[0]
+midz          = bins + dz/2.
+
+cumulative    = np.cumsum(dNdz)
+
+pl.plot(midz, dNdz, label = 'MUSE')
+
+pl.xlabel(r'$z$')
+pl.ylabel(r'$dN/dz$')
+
+pl.savefig('../plots/dNdz.pdf')
+  

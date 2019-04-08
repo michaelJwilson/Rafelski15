@@ -1,0 +1,16 @@
+#!/bin/bash                                                                                                                                                
+
+#SBATCH -N 1                          ##  Use 1 nodes                                                                                                      
+#SBATCH -p regular                                                                                                                                           
+#SBATCH -t 03:00:00                   ##  xx mins                                                                                                          
+#SBATCH -J Rafelski                                                                                                                                    
+#SBATCH -C haswell                                                                                                                                           
+
+#SBATCH -o "/global/cscratch1/sd/mjwilson/MUSE/Rafelski15/EAZY/eazy-photoz/pyDemo/out.txt"                                                                 
+#SBATCH -e "/global/cscratch1/sd/mjwilson/MUSE/Rafelski15/EAZY/eazy-photoz/pyDemo/err.txt"                                                                
+
+cd $SLURM_SUBMIT_DIR                                                                                            
+
+source env.sh
+
+srun -n 1 python multipoles.py

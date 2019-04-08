@@ -1,0 +1,15 @@
+#!/bin/bash                                                                                                                                                
+
+#SBATCH --nodes 1                      ##  Use 1 nodes                                                                                                      
+#SBATCH --qos regular                                                                                                                                        
+#SBATCH --time 10:00:00                ##  xx mins                                                                                                          
+#SBATCH  -J aRafelski                                                                                                                                        
+                                                                                                                                 
+#SBATCH -o "/scratch1/scratchdirs/mjwilson/MUSE/Rafelski15/EAZY/eazy-photoz/pyDemo/aegis_out.txt"                                                        
+#SBATCH -e "/scratch1/scratchdirs/mjwilson/MUSE/Rafelski15/EAZY/eazy-photoz/pyDemo/aegis_err.txt"                                                          
+    
+cd $SLURM_SUBMIT_DIR                                                                                            
+
+source env.sh
+
+srun -n 1 python aegis_eazy.py

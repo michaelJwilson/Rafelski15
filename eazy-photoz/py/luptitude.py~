@@ -1,0 +1,15 @@
+import numpy as np
+import pylab as pl
+
+
+def mu(F, sigF):
+  ##  Luptitudes, https://arxiv.org/pdf/astro-ph/9903081.pdf
+  ##  Note:  x = F / F0, where F0 is the flux of a zero mag. object.
+  a     = 2.500 * np.log10(np.exp(1))
+  b     = 1.042 * SigF  
+
+  F0    = 10. ** (-48.60 / 2.5)
+  x     = F / F0
+
+  return  -a * (np.arcsinh(x / 2. / b) + np.log(b)) 
+

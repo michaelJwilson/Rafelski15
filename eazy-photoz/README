@@ -1,0 +1,4 @@
+ASTROPY DEPRECATED:
+
+/global/cscratch1/sd/mjwilson/MUSE/Rafelski15/EAZY/eazy-photoz/threedhst/threedhst/catIO.py", line 827, in write_fits
+tbhdu = pyfits.new_table(coldefs)

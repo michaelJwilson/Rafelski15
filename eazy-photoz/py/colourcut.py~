@@ -1,0 +1,90 @@
+import  os
+import  copy
+import  glob
+import  numpy  as  np
+import  pylab  as  pl
+
+from    astropy.table import Table
+from    threedhst.app_mags import get_colors
+
+
+def colourcut(mags, dropband='g', good=True):
+    if dropband == 'g':
+        colors     = get_colors(mags, get_colors=['g-r', 'r-i'], fname = None)
+        goodmags   = np.all(np.isfinite(np.array([mags['g'], mags['r'], mags['i']])))  ##  Finite magnitudes in relevant bands.                                                                                          
+
+        return (colors['g-r'] > 1.0) & (colors['r-i'] < 1.0) & (colors['g-r'] > 1.5 * colors['r-i'] + 0.8) & goodmags
+
+
+if __name__ =='__main__':
+    print('\n\nWelcome.\n\n')
+
+    printit       =  False
+    DODEPTH       = 'FULL'
+    HEAVY         = 'scratch'  ## {'lite', 'scratch'}
+
+    files         =  glob.glob('colors/%s/*.fits' % HEAVY)
+    files         = [x.split('.fits')[0] for x in files]
+
+    files         = [x.split('colors/%s/3DHST_' % HEAVY)[1] for x in files]
+
+    fields        = [x.split('_')[0] for x in files]
+    ufields       = list(set(fields))
+    nfields       = len(ufields)
+
+    zbins         = np.arange(0.0, 6.0, 0.10)
+
+    dz            = zbins[1] - zbins[0]
+    midz          = zbins[:-1] + dz/2.
+
+    depths        = [xx.split('ugrizyYJHK_')[1].split('_')[0] for xx in files]
+    depths        = ['FULL' if len(depth) == 1 else depth for depth in depths]
+    udepths       =  set(depths)
+
+    for ldepth in udepths:
+        results  = {x: np.zeros_like(midz) for x in ufields}
+
+    for ii, xx in enumerate(files):
+        depth  = depths[ii]
+        field  = fields[ii]
+ 
+        drops  = []
+
+        if depth == DODEPTH:
+            print('Solving for %s.' % xx)
+
+            magt   = Table.read('colors/%s/3DHST_' % HEAVY + xx + '.fits', format='fits')
+            cols   = magt.colnames
+
+            mags   = copy.copy(cols)
+            mags.remove('id')
+            mags.remove('zpeak')
+
+            for row in magt:
+                rowmags = [row[x] for x in mags]  
+                magdict = dict(zip(mags, rowmags))
+      
+                if colourcut(magdict, dropband='g', good=True):
+                    drops.append('Y')
+
+                else:
+                    drops.append('N')  
+
+            magt['gdrop']   = drops
+            zs              = magt['zpeak'][magt['gdrop'] == 'Y']
+      
+            ## Histogram of color cut redshifts. 
+            (dNdz, bins)    = np.histogram(zs, bins = zbins)
+
+            dNdz            = dNdz.astype(np.float)
+            results[field] += dNdz
+
+            if printit:
+                print(ldepth)
+                print(magt)
+
+    for field in results:
+        output = np.c_[midz, results[field]]
+        np.savetxt('dNdz/%s_%s_dz_%.2lf.txt' % (field, DODEPTH, dz), output, fmt='%.6le')
+
+    print('\n\nDone.\n\n')
